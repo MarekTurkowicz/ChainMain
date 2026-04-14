@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import json
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 
 from models.schemas import AskRequest
@@ -13,8 +14,8 @@ router = APIRouter(tags=["ask"])
 
 
 @router.post("/ask")
-async def ask(request: AskRequest) -> StreamingResponse:
-    question = request.question.strip()
+async def ask(payload: AskRequest, request: Request) -> StreamingResponse:
+    question = payload.question.strip()
     if not question:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -22,12 +23,19 @@ async def ask(request: AskRequest) -> StreamingResponse:
         )
 
     async def event_generator():
+        stream = answer_stream(question, doc_ids=payload.doc_ids)
         try:
-            async for event in answer_stream(question, doc_ids=request.doc_ids):
+            async for event in stream:
+                if await request.is_disconnected():
+                    break
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+        except asyncio.CancelledError:
+            raise
         except Exception as e:
             err = {"type": "error", "data": str(e)}
             yield f"data: {json.dumps(err, ensure_ascii=False)}\n\n"
+        finally:
+            await stream.aclose()
 
     return StreamingResponse(
         event_generator(),
