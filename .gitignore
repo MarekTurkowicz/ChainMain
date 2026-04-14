@@ -1,4 +1,6 @@
 # ---- Python / Backend ----
+chainmain-venv/
+backend/chainmain-venv/
 backend/.venv/
 **/__pycache__/
 *.py[cod]
@@ -6,6 +8,8 @@ backend/.venv/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+*.dist-info/
+poetry.lock
 
 # Secrets
 .env
@@ -24,10 +28,16 @@ backend/data/documents.json
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
+frontend/.playwright/
+frontend/playwright-report/
+frontend/test-results/
+frontend/blob-report/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+package-lock.json
+.test-files/
 
 # ---- Editors / OS ----
 .vscode/
