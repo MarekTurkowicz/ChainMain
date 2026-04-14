@@ -1,0 +1,17 @@
+# Normalize line endings across Windows/macOS/Linux committers.
+* text=auto eol=lf
+
+# Keep Windows batch files CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Treat these as binary — never diff or line-ending-munge.
+*.pdf     binary
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.zip     binary
+*.gz      binary
+*.parquet binary
