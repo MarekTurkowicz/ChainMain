@@ -23,8 +23,12 @@ def isolated_env(tmp_path, monkeypatch):
     monkeypatch.setenv("METADATA_FILE", str(tmp_path / "documents.json"))
 
     # Force re-import of config + dependents so fresh env is picked up.
+    # Also pop package roots — otherwise `from rag import embeddings` would
+    # return a stale attribute from the cached `rag` package, bypassing the
+    # fresh module we expect to be re-imported.
+    targets = ("config", "main", "rag", "services", "routes")
     for mod in list(sys.modules):
-        if mod == "config" or mod.startswith(("rag.", "services.", "routes.")):
+        if mod in targets or mod.startswith(tuple(f"{t}." for t in targets)):
             sys.modules.pop(mod, None)
     yield
 
