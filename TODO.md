@@ -2,23 +2,48 @@
 
 Keep this list pruned. Check items off when done, add new ones as they come up.
 
-> Last updated: 2026-04-14
+> Last updated: 2026-04-15
 
 ## 🔜 Start here tomorrow
 
-1. **Install & smoke test**
-   - [ ] `cd backend && python -m venv .venv && source .venv/Scripts/activate && pip install -r requirements.txt`
-   - [ ] Copy `.env.example` → `.env`, set `OPENAI_API_KEY`
-   - [ ] `pytest` — should be green (uses fake embeddings, no network)
-   - [ ] `uvicorn main:app --reload --port 9000` → `http://localhost:9000/health`
-   - [ ] `cd frontend && npm install && npm run dev` → `http://localhost:9001`
-   - [ ] Upload a small PDF, ask a question, verify streaming + sources
-2. **Playwright** (parked by choice — add when you want it)
-   - [ ] Add `playwright.config.js` + `tests/e2e/happy_path.spec.js`
-   - [ ] Scripts in `package.json`: `test:e2e`, `playwright:install`
-   - [ ] Stub `/api/upload`, `/api/documents`, `/api/ask` (SSE) or run real backend
-3. **Git flow**
-   - [ ] Current branch: `feat/frontend-mvp`. When ready: PR → `dev`. When dev verified → `main`.
+1. **Manual smoke test of Phase 1 work** (browser)
+   - [ ] Upload PDF → ask → click a source chip → context panel opens with neighbors
+   - [ ] Hit Stop mid-stream → backend stops generating (check logs)
+   - [ ] Kill backend mid-stream → Retry button appears → restart backend → Retry works
+   - [ ] Try uploading a 25 MB file → 413; try `.exe` → 415
+2. **Merge Phase 1**
+   - [ ] PR `feat/frontend-mvp` → `dev`, verify, then `dev` → `main`
+3. **Open new branch for Phase 2**: `feat/conversation-memory`
+
+## Roadmap (post-MVP)
+
+### Phase 1 — Stability & UX polish ✅ DONE
+- [x] Backend: cancel SSE on client disconnect (`request.is_disconnected()` + `aclose()`)
+- [x] Backend: upload validation — file size limit (MAX_UPLOAD_MB), extension + MIME allowlist
+- [x] Backend: `GET /chunks/{id}?window=N` returns chunk + neighbors (uses new `chunk_index` metadata)
+- [x] Frontend: source chip → side panel with target chunk highlighted + neighbors
+- [x] Frontend: Retry button on stream error (replaces inline `⚠` text)
+- [x] Tests: upload validation + chunk preview endpoint; flaky-conftest fix (pop package roots)
+
+### Phase 2 — Conversation memory & answer quality
+- [ ] **Conversation memory** — last N Q/A pairs in context; condense follow-up questions
+- [ ] **Persistent chat history** — SQLite (`conversations`, `messages` tables); `GET/POST /conversations`
+- [ ] **Reranking** — cross-encoder (e.g. `bge-reranker`) after retrieve, before LLM
+- [ ] **Hybrid search** — BM25 + dense via `EnsembleRetriever`
+- [ ] Frontend: conversation list sidebar; new-chat button; rename/delete
+
+### Phase 3 — Local models (toggle)
+- [ ] Provider flag in `config.py`: `openai` | `ollama` | `local`
+- [ ] Local embeddings (`sentence-transformers/paraphrase-multilingual`) — better for PL
+- [ ] Local LLM via Ollama (`bielik`, `llama3.1`) — works offline
+- [ ] Health endpoint reports the active provider
+
+### Phase 4 — Productionization
+- [ ] **Auth** — API key header or lightweight session
+- [ ] **Rate limiting** on `/ask` (`slowapi`)
+- [ ] **Dockerfile + docker-compose** — one-command start
+- [ ] **Eval harness** — RAGAS + ~20-question Polish golden set
+- [ ] **Background indexing** for large PDFs (BackgroundTasks first, RQ+Redis if needed)
 
 ## MVP (must-have)
 
@@ -40,18 +65,10 @@ Keep this list pruned. Check items off when done, add new ones as they come up.
 - [x] Docs: README, PROJECT_STRUCTURE, HOW_IT_WORKS, TODO
 - [x] Git: `main` + `dev` + `feat/frontend-mvp` branches, Claude artifacts gitignored
 
-## Next up (nice-to-have)
+## Loose / unscheduled
 
-- [ ] **Playwright e2e** (postponed): upload → ask → assert sources visible
-- [ ] Backend: streaming error mid-answer — currently appends `⚠` in UI, could add retry
-- [ ] Backend: chunk preview endpoint (`GET /chunks/{chunk_id}`) for surrounding context
-- [ ] Frontend: click a source chip → jump to/highlight in a document preview pane
-- [ ] Conversation memory (follow-up questions using chat history)
-- [ ] Reranking (Cohere or cross-encoder) before the LLM
-- [ ] Persistent chat history (SQLite)
-- [ ] Auth (API key in header, or a lightweight session)
-- [ ] Rate limiting on `/ask`
-- [ ] File size limit + large-file background indexing (Celery/RQ)
+- [ ] Playwright e2e: write actual happy-path test (config exists, spec is a stub)
+- [ ] Large-file background indexing (Celery/RQ) — only if file size limit gets bumped
 
 ## Added mid-session (discovered while writing)
 
