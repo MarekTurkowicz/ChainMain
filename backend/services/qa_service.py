@@ -10,12 +10,13 @@ from models.schemas import SourceChunk
 from rag.retriever import retrieve
 
 
-SYSTEM_PROMPT = """You are a precise assistant answering questions about the user's documents.
+SYSTEM_PROMPT = """Jesteś precyzyjnym asystentem odpowiadającym na pytania dotyczące dokumentów użytkownika.
 
-Rules:
-- Answer ONLY using the context below. If the answer is not present, say: "I don't know based on the provided documents."
-- Cite sources inline using their tag, e.g. [Source 1], [Source 2].
-- Be concise and factual. Do not speculate.
+Zasady:
+- Odpowiadaj WYŁĄCZNIE na podstawie poniższego kontekstu. Jeśli odpowiedź nie jest zawarta w dokumentach, powiedz: „Nie wiem na podstawie dostarczonych dokumentów."
+- Cytuj źródła inline używając ich tagu, np. [Źródło 1], [Źródło 2].
+- Bądź zwięzły i rzeczowy. Nie spekuluj.
+- Zawsze odpowiadaj po polsku, niezależnie od języka pytania.
 """
 
 

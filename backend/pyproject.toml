@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "chainmain-backend"
+version = "0.1.0"
+description = "Retrieval-Augmented Generation app with FastAPI, LangChain, and Chroma"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "."}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.115.0"
+uvicorn = {version = "^0.30.0", extras = ["standard"]}
+python-multipart = "^0.0.9"
+pydantic = "^2.8.0"
+pydantic-settings = "^2.4.0"
+python-dotenv = "^1.0.1"
+
+# LangChain & RAG
+langchain = "^1.2.15"
+langchain-community = "^0.3.30"
+langchain-openai = "^1.1.12"
+langchain-chroma = "^0.2.5"
+langchain-text-splitters = "^0.3.10"
+
+# Vector DB & LLM
+chromadb = "^1.5.7"
+openai = "^1.60.0"
+pypdf = "^6.10.0"
+tiktoken = "^0.8.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.3"
+httpx = "^0.27.0"
+pytest-asyncio = "^0.25.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
