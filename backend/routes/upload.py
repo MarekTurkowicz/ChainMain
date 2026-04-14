@@ -1,13 +1,23 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
+from config import settings
 from models.schemas import UploadResponse
-from rag.loader import UnsupportedFileType
+from rag.loader import SUPPORTED_EXTENSIONS, UnsupportedFileType
 from services import document_service
 
 
 router = APIRouter(tags=["upload"])
+
+ALLOWED_MIME_TYPES = {
+    "application/pdf",
+    "text/plain",
+    "text/markdown",
+    "application/octet-stream",  # browsers sometimes send this for .txt
+}
 
 
 @router.post("/upload", response_model=UploadResponse)
@@ -17,7 +27,28 @@ async def upload_file(file: UploadFile = File(...)) -> UploadResponse:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Missing filename",
         )
-    content = await file.read()
+
+    ext = Path(file.filename).suffix.lower()
+    if ext not in SUPPORTED_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=f"Unsupported file extension: {ext or '(none)'}. Allowed: {sorted(SUPPORTED_EXTENSIONS)}",
+        )
+
+    mime = (file.content_type or "application/octet-stream").lower()
+    if mime not in ALLOWED_MIME_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=f"Unsupported MIME type: {mime}",
+        )
+
+    max_bytes = settings.max_upload_mb * 1024 * 1024
+    content = await file.read(max_bytes + 1)
+    if len(content) > max_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+            detail=f"File exceeds {settings.max_upload_mb} MB limit",
+        )
     if not content:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -27,7 +58,7 @@ async def upload_file(file: UploadFile = File(...)) -> UploadResponse:
         info = document_service.save_and_index(
             filename=file.filename,
             content=content,
-            mime_type=file.content_type or "application/octet-stream",
+            mime_type=mime,
         )
     except UnsupportedFileType as e:
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail=str(e))

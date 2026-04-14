@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     chunk_overlap: int = 200
     top_k: int = 4
 
+    max_upload_mb: int = 20
+
     upload_dir: str = "data/uploads"
     chroma_dir: str = "data/chroma"
     metadata_file: str = "data/documents.json"
