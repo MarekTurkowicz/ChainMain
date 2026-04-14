@@ -1,6 +1,4 @@
 <script setup>
-import { ref } from 'vue';
-
 defineProps({
   role: { type: String, required: true },   // 'user' | 'assistant'
   text: { type: String, required: true },
@@ -8,8 +6,10 @@ defineProps({
   streaming: { type: Boolean, default: false },
 });
 
-const expanded = ref({});
-function toggle(i) { expanded.value[i] = !expanded.value[i]; }
+const emit = defineEmits(['preview']);
+function openPreview(s) {
+  if (s?.chunk_id) emit('preview', s);
+}
 </script>
 
 <template>
@@ -26,8 +26,9 @@ function toggle(i) { expanded.value[i] = !expanded.value[i]; }
             v-for="(s, i) in sources"
             :key="s.chunk_id || i"
             class="s-item"
-            @click="toggle(i)"
+            @click="openPreview(s)"
             data-testid="source-chip"
+            title="Click to preview chunk with surrounding context"
           >
             <div class="s-title">
               <span class="tag">[{{ i + 1 }}]</span>
@@ -35,7 +36,6 @@ function toggle(i) { expanded.value[i] = !expanded.value[i]; }
               <span v-if="s.page" class="page">p.{{ s.page }}</span>
               <span v-if="s.score != null" class="score">{{ Math.round(s.score * 100) }}%</span>
             </div>
-            <div v-if="expanded[i]" class="s-body">{{ s.text }}</div>
           </div>
         </div>
       </div>

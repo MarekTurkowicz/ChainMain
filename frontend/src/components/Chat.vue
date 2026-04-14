@@ -7,6 +7,8 @@ const props = defineProps({
   selectedDocIds: { type: Array, required: true },
 });
 
+const emit = defineEmits(['preview']);
+
 const messages = ref([]);
 const input = ref('');
 const busy = ref(false);
@@ -91,6 +93,7 @@ watch(messages, scrollToBottom, { deep: true });
         :text="m.text"
         :sources="m.sources || []"
         :streaming="m.streaming"
+        @preview="(s) => emit('preview', s)"
       />
     </div>
 

@@ -3,11 +3,13 @@ import { onMounted, ref } from 'vue';
 import Upload from './components/Upload.vue';
 import DocumentList from './components/DocumentList.vue';
 import Chat from './components/Chat.vue';
+import ChunkPreview from './components/ChunkPreview.vue';
 import { listDocuments } from './services/api.js';
 
 const docs = ref([]);
 const selected = ref([]);
 const loadError = ref('');
+const previewSource = ref(null);
 
 async function refresh() {
   try {
@@ -59,8 +61,10 @@ onMounted(refresh);
     </aside>
 
     <main class="main">
-      <Chat :selected-doc-ids="selected" />
+      <Chat :selected-doc-ids="selected" @preview="(s) => previewSource = s" />
     </main>
+
+    <ChunkPreview :source="previewSource" @close="previewSource = null" />
   </div>
 </template>
 

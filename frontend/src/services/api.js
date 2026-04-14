@@ -17,6 +17,15 @@ export async function listDocuments() {
   return (await res.json()).documents;
 }
 
+export async function getChunk(chunkId, window = 2) {
+  const res = await fetch(`${API_BASE}/chunks/${encodeURIComponent(chunkId)}?window=${window}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `Failed to load chunk (${res.status})`);
+  }
+  return res.json();
+}
+
 export async function deleteDocument(docId) {
   const res = await fetch(`${API_BASE}/documents/${docId}`, { method: 'DELETE' });
   if (!res.ok && res.status !== 404) throw new Error(`Delete failed (${res.status})`);
