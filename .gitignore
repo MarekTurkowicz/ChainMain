@@ -48,6 +48,10 @@ package-lock.json
 Thumbs.db
 desktop.ini
 
+# ---- Local-only docs ----
+# Merged internal documentation — keep on disk, not in repo.
+DOCS.md
+
 # ---- Claude Code / AI tooling artifacts ----
 # Never commit AI tooling state or notes.
 .claude/
