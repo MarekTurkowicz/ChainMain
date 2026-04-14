@@ -14,7 +14,7 @@ def ingest(path: Path, doc_id: str, filename: str) -> int:
     chunks = split_documents(raw_docs)
 
     chunk_ids: list[str] = []
-    for chunk in chunks:
+    for index, chunk in enumerate(chunks):
         chunk_id = str(uuid.uuid4())
         chunk_ids.append(chunk_id)
         chunk.metadata = {
@@ -22,6 +22,7 @@ def ingest(path: Path, doc_id: str, filename: str) -> int:
             "doc_id": doc_id,
             "filename": filename,
             "chunk_id": chunk_id,
+            "chunk_index": index,
         }
 
     if chunks:

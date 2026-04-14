@@ -39,6 +39,21 @@ class AskResponse(BaseModel):
     sources: list[SourceChunk]
 
 
+class ChunkPreview(BaseModel):
+    chunk_id: str
+    chunk_index: int
+    doc_id: str
+    filename: str
+    page: int | None = None
+    text: str
+    is_target: bool = False
+
+
+class ChunkPreviewResponse(BaseModel):
+    target: ChunkPreview
+    neighbors: list[ChunkPreview]
+
+
 class DocumentsResponse(BaseModel):
     documents: list[DocumentInfo]
 

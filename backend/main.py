@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from routes import ask, documents, upload
+from routes import ask, chunks, documents, upload
 
 
 app = FastAPI(
@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(upload.router)
 app.include_router(ask.router)
 app.include_router(documents.router)
+app.include_router(chunks.router)
 
 
 @app.get("/health", tags=["meta"])
