@@ -20,19 +20,15 @@ async function scrollToBottom() {
   if (scrollRef.value) scrollRef.value.scrollTop = scrollRef.value.scrollHeight;
 }
 
-function onSubmit() {
-  const q = input.value.trim();
-  if (!q || busy.value) return;
-
-  messages.value.push({ role: 'user', text: q });
-  const assistantMsg = { role: 'assistant', text: '', sources: [], streaming: true };
-  messages.value.push(assistantMsg);
-  input.value = '';
+function streamInto(assistantMsg, question) {
+  assistantMsg.errored = false;
+  assistantMsg.error = '';
+  assistantMsg.streaming = true;
   busy.value = true;
   scrollToBottom();
 
   abort = askStream({
-    question: q,
+    question,
     docIds: props.selectedDocIds,
     onEvent: (ev) => {
       if (ev.type === 'token') {
@@ -45,13 +41,40 @@ function onSubmit() {
         busy.value = false;
         abort = null;
       } else if (ev.type === 'error') {
-        assistantMsg.text += `\n\n⚠ ${ev.data}`;
+        assistantMsg.errored = true;
+        assistantMsg.error = ev.data;
         assistantMsg.streaming = false;
         busy.value = false;
         abort = null;
       }
     },
   });
+}
+
+function onSubmit() {
+  const q = input.value.trim();
+  if (!q || busy.value) return;
+
+  messages.value.push({ role: 'user', text: q });
+  const assistantMsg = {
+    role: 'assistant',
+    text: '',
+    sources: [],
+    streaming: true,
+    errored: false,
+    error: '',
+    question: q,
+  };
+  messages.value.push(assistantMsg);
+  input.value = '';
+  streamInto(assistantMsg, q);
+}
+
+function onRetry(msg) {
+  if (busy.value || !msg?.question) return;
+  msg.text = '';
+  msg.sources = [];
+  streamInto(msg, msg.question);
 }
 
 function stop() {
@@ -93,7 +116,10 @@ watch(messages, scrollToBottom, { deep: true });
         :text="m.text"
         :sources="m.sources || []"
         :streaming="m.streaming"
+        :errored="m.errored"
+        :error="m.error"
         @preview="(s) => emit('preview', s)"
+        @retry="onRetry(m)"
       />
     </div>
 

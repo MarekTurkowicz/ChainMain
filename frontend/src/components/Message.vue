@@ -4,9 +4,11 @@ defineProps({
   text: { type: String, required: true },
   sources: { type: Array, default: () => [] },
   streaming: { type: Boolean, default: false },
+  errored: { type: Boolean, default: false },
+  error: { type: String, default: '' },
 });
 
-const emit = defineEmits(['preview']);
+const emit = defineEmits(['preview', 'retry']);
 function openPreview(s) {
   if (s?.chunk_id) emit('preview', s);
 }
@@ -17,6 +19,11 @@ function openPreview(s) {
     <div class="bubble">
       <div class="text">
         {{ text }}<span v-if="streaming" class="cursor">▍</span>
+      </div>
+
+      <div v-if="errored" class="error-row" data-testid="message-error">
+        <span class="warn">⚠ {{ error || 'Stream interrupted.' }}</span>
+        <button class="retry" @click="emit('retry')" data-testid="retry-button">Retry</button>
       </div>
 
       <div v-if="sources.length" class="sources">
@@ -75,6 +82,30 @@ function openPreview(s) {
   color: var(--accent);
 }
 @keyframes blink { to { opacity: 0; } }
+
+.error-row {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 8px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 6px;
+}
+.warn { color: var(--danger); font-size: 12px; }
+.retry {
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background var(--t);
+}
+.retry:hover { background: rgba(239, 68, 68, 0.15); }
 
 .sources { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }
 .s-head {
